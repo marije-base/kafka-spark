@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  kafka:
+      image: spotify/kafka
+      ports:
+       - "9092:9092"
+       - "2181:2181"
+      environment:
+        TOPICS: "events,words,twitter-topics"
+        ADVERTISED_PORT: 9092
+        GROUP_ID: kafka-spark-streaming
+
+
+  java:
+    image: openjdk:jre
+    command: bash
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./build:/build
+    working_dir: /build
+    depends_on:
+      - kafka
