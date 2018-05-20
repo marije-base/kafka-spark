@@ -7,7 +7,7 @@
 dist/*
 target/
 build/
-project/
+project/target/
 .idea/
 lib_managed/
 src_managed/
