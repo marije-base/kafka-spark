@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  nifi:
+#      image: apache/nifi
+      build: ./conf/nifi/.
+      ports:
+        - "9090:9090"
+      environment:
+        NIFI_WEB_HTTP_PORT: 9090
+      depends_on:
+        - kafka
+
+  kafka:
+      image: spotify/kafka
+      ports:
+       - "9092:9092"
+       - "2181:2181"
+      environment:
+        TOPICS: "events,words,twitter-topics"
+        ADVERTISED_PORT: 9092
+        ADVERTISED_HOST: kafka
+        GROUP_ID: kafka-spark-streaming
+
+
+  spark:
+#    image: openjdk:jre
+#    command: bash
+    build: ./conf/spark/.
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./build:/build
+    working_dir: /build
+    depends_on:
+      - kafka
+      - nifi
