@@ -15,11 +15,6 @@ libraryDependencies ++= Seq(
   )
 )
 
-libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1"
-libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1" classifier "models"
-// https://mvnrepository.com/artifact/com.cybozu.labs/langdetect
-libraryDependencies += "com.cybozu.labs" % "langdetect" % "1.1-20120112"
-
 
 target in assembly := file("build")
 
