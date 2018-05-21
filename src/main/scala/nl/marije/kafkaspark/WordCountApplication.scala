@@ -1,13 +1,16 @@
 package nl.marije.kafkaspark
 
 import org.apache.kafka.common.serialization.StringDeserializer
+import com.cybozu.labs.langdetect.DetectorFactory
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.count
-import org.apache.spark.sql.types.{StringType, StructType, TimestampType}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{StringType, StructType, TimestampType, LongType}
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.KafkaUtils
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import scala.util.Try
 
 // copied from a demo * https://github.com/antlypls/spark-demos *
 object WordCountApplication {
@@ -30,6 +33,7 @@ object WordCountApplication {
 
     import spark.implicits._
 
+
     // Create Streaming Context and Kafka Direct Stream with provided settings and 10 seconds batches
     val ssc = new StreamingContext(spark.sparkContext, Seconds(10))
 
@@ -49,16 +53,42 @@ object WordCountApplication {
     )
 
     // Define a schema for JSON data
+//
+//    {
+//      "created_at":"Thu Apr 06 15:24:15 +0000 2017",
+//      "id": 850006245121695744,
+//      "id_str": "850006245121695744",
+//      "text": "1/ Today we’re sharing our vision for the future of the Twitter API platform!nhttps://t.co/XweGngmxlP",
+//      "user": {},
+//      "entities": {}
+//    }
+
     val schema = new StructType()
-      .add("word", StringType)
+      .add("created_at", StringType)
+      .add("id", LongType)
+      .add("id_str", StringType)
+      .add("text", StringType)
+
+    def detectNumberOfTags(text: String) : Int = {
+
+      Try {
+        val tags = text.split(" ").filter(_.startsWith("#"))
+        tags.length
+      }.getOrElse(0)
+    }
+    val udf_detectNumberOfTags = udf(detectNumberOfTags _)
+
 
     // Process batches:
     // Parse JSON and create Data Frame
     // Execute computation on that Data Frame and print result
+
+
     stream.foreachRDD { (rdd, time) =>
       val data = rdd.map(record => record.value)
       val json = spark.read.schema(schema).json(data)
-      val result = json.agg(count("*").alias("count"))
+      val enhencedjson = json.withColumn("number_of_tags", udf_detectNumberOfTags($"text"))
+      val result = enhencedjson.groupBy($"number_of_tags").agg(count("*").alias("count")).orderBy($"number_of_tags")
       result.show
     }
 
@@ -67,4 +97,6 @@ object WordCountApplication {
     ssc.awaitTermination()
 
   }
+
+
 }
