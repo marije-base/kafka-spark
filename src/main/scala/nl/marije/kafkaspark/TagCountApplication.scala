@@ -13,7 +13,8 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 import scala.util.Try
 import java.text.SimpleDateFormat
 
-// copied from a demo * https://github.com/antlypls/spark-demos *
+
+//The base for the streaming spark project was taken from [this post](http://blog.antlypls.com/blog/2017/10/15/using-spark-sql-and-spark-streaming-together/).
 object TagCountApplication {
 	def main(args: Array[String]): Unit = {
 		// Configurations for kafka consumer
@@ -53,7 +54,7 @@ object TagCountApplication {
 			Subscribe[String, String](topics, kafkaParams)
 		)
 
-		// Define a schema for JSON data
+		// example json from twitter-data
 		//
 		//    {
 		//      "created_at":"Thu Apr 06 15:24:15 +0000 2017",
@@ -70,6 +71,11 @@ object TagCountApplication {
 				.add("id_str", StringType)
 				.add("text", StringType)
 
+		/**
+		  * Find the number of tags per tweet
+		  * @param text the text-body of the tweet
+		  * @return number of tags (as an integer, 0 if no tags are found)
+		  */
 		def detectNumberOfTags(text: String): Int = {
 
 			Try {
@@ -80,6 +86,11 @@ object TagCountApplication {
 
 		val udf_detectNumberOfTags = udf(detectNumberOfTags _)
 
+		/**
+		  * Transform the date to the correct format
+		  * @param dateAsString
+		  * @return dateAsString in the format 'yyy-MM-dd HH:mm'(or 'unknown' if no date is found)
+		  */
 		def getDate(dateAsString: String): String = {
 			Try {
 
@@ -103,8 +114,6 @@ object TagCountApplication {
 		// Process batches:
 		// Parse JSON and create Data Frame
 		// Execute computation on that Data Frame and print result
-
-
 		stream.foreachRDD { (rdd, time) =>
 			val data = rdd.map(record => record.value)
 			val json = spark.read.schema(schema).json(data)
@@ -119,8 +128,9 @@ object TagCountApplication {
 
 		// Start Stream
 		ssc.start()
-		ssc.awaitTermination()
 
+		// Make sure it doesn't only run once
+		ssc.awaitTermination()
 	}
 
 

@@ -3,8 +3,6 @@ Kafka and Spark Streaming
 
 This is a R&D project that combines Kafka with Spark Streaming using Docker and Docker Compose.
 
-The base for the streaming spark project was taken from [this post](http://blog.antlypls.com/blog/2017/10/15/using-spark-sql-and-spark-streaming-together/).
-
 ##### The Data pipeline created in this R&D project contains:
 1. Apache NiFi: To load the twitter-feed and publish it to the Kafka Pub/Sub system
 2. Apache Kafka: To create a distributed Pub/Sub Streaming platform
