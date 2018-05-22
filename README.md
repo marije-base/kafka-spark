@@ -13,7 +13,9 @@ A small presentation including the challenge and the solution is provided in the
 How to Run
 ----------
 
-##### Build fat jar: `sbt assembly`.
+##### Build fat jar
+
+run: `sbt assembly`.
 
 If you have problem with the build of the spark-streaming application you might want to try: 
 `export SBT_OPTS="-XX:+CMSClassUnloadingEnabled -XX:PermSize=512M -XX:MaxPermSize=1024M"`
@@ -21,7 +23,7 @@ If you have problem with the build of the spark-streaming application you might 
 
 ##### Build the docker-containers required for the pipeline
 
-run `sudo docker-compose build`.
+run: `sudo docker-compose build`.
 The configuration for this build are in the root of the project ./docker-compose.yml
 
 The NiFi container for loading the twitter-feed into the application requires a flow-configuration to be present in the conf-folder. (/conf/nifi) This file however contains the encrypted passwords for the twitter-application and is therefore ignored from the git-pushes. Remove the 'COPY' part from the dockerfile and add you own processors in the GUI (localhost:9092/nifi) to start the application without this flow-configuration automatically being added.
